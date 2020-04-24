@@ -93,7 +93,7 @@ void Sampler::run( const std::vector<NodePtr>& graph, int num_samples, const std
     std::map<std::string, size_t> offset;
     std::map<std::string, NodePtr> node_map;
 
-    std::vector<NodePtr> ordered_nodes = graph;
+    std::vector<NodePtr> ordered_nodes;
 
     if(ok)
     {
@@ -133,6 +133,12 @@ void Sampler::run( const std::vector<NodePtr>& graph, int num_samples, const std
     {
         ok = createInsertionStatement(db, values, &insert_stmt);
         err = "Could not create insertion statement!";
+    }
+
+    // Compute in which order to process the nodes.
+
+    {
+        ordered_nodes = graph; // TODO
     }
 
     // proceed with sampling.
