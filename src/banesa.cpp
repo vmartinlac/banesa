@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <stack>
+#include <set>
 #include <map>
 #include "banesa.h"
 
@@ -95,6 +97,9 @@ void Sampler::run( const std::vector<NodePtr>& graph, int num_samples, const std
 
     std::vector<NodePtr> ordered_nodes;
 
+    std::vector<ValuePtr> input_values;
+    std::vector<ValuePtr> output_values;
+
     if(ok)
     {
         ok = (SQLITE_OK == sqlite3_open_v2(db_path.c_str(), &db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, nullptr));
@@ -137,14 +142,14 @@ void Sampler::run( const std::vector<NodePtr>& graph, int num_samples, const std
 
     // Compute in which order to process the nodes.
 
+    if(ok)
     {
-        ordered_nodes = graph; // TODO
+        ok = reorderNodes(graph, ordered_nodes);
+        err = "Incorrect graph!";
     }
 
     // proceed with sampling.
 
-    std::vector<ValuePtr> input_values;
-    std::vector<ValuePtr> output_values;
     for(int i=0; ok && i<num_samples; i++)
     {
         // compute sample.
@@ -205,5 +210,66 @@ void Sampler::run( const std::vector<NodePtr>& graph, int num_samples, const std
         std::cout << err << std::endl;
         exit(1);
     }
+}
+
+bool Sampler::reorderNodes(const std::vector<NodePtr>& graph, std::vector<NodePtr>& ordered_nodes)
+{
+    std::map< std::string, std::vector<NodePtr> > children;
+    std::set< std::string > processed;
+    std::stack<NodePtr> stack;
+
+    for(NodePtr node : graph)
+    {
+        for(std::string parent : node->refDependencies())
+        {
+            children[parent].push_back(node);
+        }
+    }
+
+    ordered_nodes.clear();
+
+    for(NodePtr root_node : graph)
+    {
+        if( processed.count(root_node->getName()) == 0 && root_node->refDependencies().empty() )
+        {
+            stack.push(root_node);
+            ordered_nodes.push_back(root_node);
+            processed.insert(root_node->getName());
+
+            while(stack.empty() == false)
+            {
+                NodePtr node = stack.top();
+                stack.pop();
+
+                for(NodePtr child : children[node->getName()])
+                {
+                    if(processed.count(child->getName()) == 0)
+                    {
+                        bool all_dependencies_available = true;
+                        for(std::string parent_name : child->refDependencies())
+                        {
+                            all_dependencies_available = all_dependencies_available && (processed.count(parent_name) > 0);
+                        }
+
+                        if(all_dependencies_available)
+                        {
+                            stack.push(child);
+                            ordered_nodes.push_back(child);
+                            processed.insert(child->getName());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+    for(NodePtr n : graph) std::cout << n->getName() << " ";
+    std::cout << std::endl;
+    for(NodePtr n : ordered_nodes) std::cout << n->getName() << " ";
+    std::cout << std::endl;
+    */
+
+    return true;
 }
 
