@@ -87,13 +87,13 @@ public:
     void getSqlFieldNames(std::vector<std::string>& names) override
     {
         names.clear();
-        names.push_back( getName() + "_tx" );
-        names.push_back( getName() + "_ty" );
-        names.push_back( getName() + "_tz" );
-        names.push_back( getName() + "_qw" );
-        names.push_back( getName() + "_qi" );
-        names.push_back( getName() + "_qj" );
-        names.push_back( getName() + "_qk" );
+        names.push_back( getName() + "_translation_x" );
+        names.push_back( getName() + "_translation_y" );
+        names.push_back( getName() + "_translation_z" );
+        names.push_back( getName() + "_quaternion_w" );
+        names.push_back( getName() + "_quaternion_i" );
+        names.push_back( getName() + "_quaternion_j" );
+        names.push_back( getName() + "_quaternion_k" );
     }
 
     void getSqlFieldTypes(std::vector<std::string>& sqltypes) override

@@ -60,12 +60,6 @@ public:
 
     Node()
     {
-        myAcceptMultithreading = false;
-    }
-
-    bool getAcceptMultithreading()
-    {
-        return myAcceptMultithreading;
     }
 
     std::string getName()
@@ -87,11 +81,6 @@ public:
 
 protected:
 
-    void setAcceptMultithreading(bool x)
-    {
-        myAcceptMultithreading = x;
-    }
-
     void setName(const std::string& name)
     {
         myName = name;
@@ -109,24 +98,10 @@ protected:
 
 private:
 
-    bool myAcceptMultithreading;
     std::string myName;
     std::vector<ValueFactoryPtr> myValueFactories;
     std::vector<std::string> myDependencies;
 };
 
 using NodePtr = std::shared_ptr<Node>;
-
-class Sampler
-{
-public:
-
-    void run( const std::vector<NodePtr>& graph, int num_samples, const std::string& db_path);
-
-private:
-
-    bool createTable(sqlite3* db, const std::vector<NodePtr>& graph);
-    bool createInsertionStatement(sqlite3* db, std::vector<ValuePtr>& values, sqlite3_stmt** stmt);
-    bool reorderNodes(const std::vector<NodePtr>& graph, std::vector<NodePtr>& ordered_nodes);
-};
 

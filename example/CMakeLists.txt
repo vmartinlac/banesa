@@ -1,4 +1,4 @@
 
-add_executable(banesa_demo main.cpp)
-target_link_libraries(banesa_demo PUBLIC opencv_core banesa)
+add_executable(banesa_example main.cpp)
+target_link_libraries(banesa_example PUBLIC opencv_core banesa)
 

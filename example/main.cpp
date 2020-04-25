@@ -20,10 +20,16 @@ public:
     void getSample(const std::vector<ValuePtr>& input, std::vector<ValuePtr>& output) override
     {
         auto output_image = std::dynamic_pointer_cast< FileValue<cv::Mat3b> >(output[0]);
+        auto output_camera_to_world = std::dynamic_pointer_cast<SE3Value>(output[1]);
+        auto output_object_to_world = std::dynamic_pointer_cast<SE3Value>(output[2]);
+
+        assert( output_image );
+        assert( output_camera_to_world );
+        assert( output_object_to_world );
+
         output_image->setPath("nada.txt");
         output_image->ref() = cv::Mat3b(320, 200);
 
-        auto output_camera_to_world = std::dynamic_pointer_cast<SE3Value>(output[1]);
         output_camera_to_world->refTranslationX() = 0.0;
         output_camera_to_world->refTranslationY() = 0.0;
         output_camera_to_world->refTranslationZ() = 0.0;
@@ -32,7 +38,6 @@ public:
         output_camera_to_world->refQuaternionJ() = 0.0;
         output_camera_to_world->refQuaternionK() = 0.0;
 
-        auto output_object_to_world = std::dynamic_pointer_cast<SE3Value>(output[2]);
         output_object_to_world->refTranslationX() = 0.0;
         output_object_to_world->refTranslationY() = 0.0;
         output_object_to_world->refTranslationZ() = 0.0;
@@ -60,6 +65,9 @@ public:
     void getSample(const std::vector<ValuePtr>& input, std::vector<ValuePtr>& output) override
     {
         auto output_threshold = std::dynamic_pointer_cast<RealValue>(output[0]);
+
+        assert( output_threshold );
+
         output_threshold->ref() = 10.0;
     }
 
@@ -77,7 +85,7 @@ public:
         setName("pose_estimation");
         registerDependency("experimental_conditions");
         registerDependency("algorithm_parameters");
-        registerValueFactory( std::make_shared<RealValueFactory>("position_est") );
+        registerValueFactory( std::make_shared<SE3ValueFactory>("position_est") );
     }
 
     void getSample(const std::vector<ValuePtr>& input, std::vector<ValuePtr>& output) override
@@ -88,6 +96,12 @@ public:
         auto input_threshold = std::dynamic_pointer_cast<RealValue>(input[3]);
 
         auto output_object_to_world_est = std::dynamic_pointer_cast<SE3Value>(output[0]);
+
+        assert( input_image );
+        assert( input_camera_to_world );
+        assert( input_object_to_world );
+        assert( input_threshold );
+        assert( output_object_to_world_est );
     }
 };
 
@@ -100,7 +114,7 @@ int main(int num_args, char** args)
     auto node2 = std::make_shared<PoseEstimationNode>();
 
     Sampler sampler;
-    sampler.run({node0, node1, node2}, 10, "db.sqlite");
+    sampler.run({node0, node1, node2}, 10, "db.sqlite", false);
 
     return 0;
 }
